@@ -8,12 +8,17 @@ using AutoMapper;
 using Contracts;
 using Entities.Dto;
 using Entities.Models;
+using Marvin.Cache.Headers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
 {
+    [ApiVersion("1.0", Deprecated = true)]  
+    //[Route("api/{v:apiversion}/companies")]
     [Route("api/companies")]
     [ApiController]
+    [ResponseCache(CacheProfileName = "120SecondsDuration")]
     public class CompaniesController : ControllerBase
     {
         private readonly IRepositoryManager _repository;
@@ -28,8 +33,10 @@ namespace Api.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet]
+        [HttpGet, Authorize]
         [HttpHead]
+        [HttpCacheExpiration(CacheLocation = CacheLocation.Public, MaxAge = 60)]
+        [HttpCacheValidation(MustRevalidate = false)]
         public async Task<IActionResult> GetCompanies()
         {
             var companies =
@@ -41,6 +48,7 @@ namespace Api.Controllers
         }
 
         [HttpGet("{id}", Name = "CompanyById")]
+        [ResponseCache(Duration = 60)]
         [ServiceFilter(typeof(ValidateCompanyExistsAttribute))]
         public IActionResult GetCompany(Guid id)
         {

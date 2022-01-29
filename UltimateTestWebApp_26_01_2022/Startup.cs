@@ -1,6 +1,8 @@
 using System.IO;
+using Api.Authentication;
 using Api.Extensions;
 using Api.Filters.ActionFilters;
+using AspNetCoreRateLimit;
 using Contracts;
 using Entities.Dto;
 using Microsoft.AspNetCore.Builder;
@@ -36,6 +38,7 @@ namespace Api
                 {
                     config.RespectBrowserAcceptHeader = true;
                     config.ReturnHttpNotAcceptable = true;
+                    config.CacheProfiles.Add("120SecondsDuration", new CacheProfile() { Duration = 120});
                 })
                 .AddNewtonsoftJson()
                 .AddXmlDataContractSerializerFormatters();
@@ -47,9 +50,24 @@ namespace Api
             services.AddScoped<ValidateEmployeeForCompanyExistsAttribute>();
 
             services.AddScoped<IDataShaper<EmployeeDto>, DataShaper<EmployeeDto>>();
+
+            services.ConfigureVersioning();
+
+            services.ConfigureResponseCaching();
+            services.ConfigureHttpCacheHeaders();
+
+            services.AddMemoryCache();
+            services.ConfigureRateLimitingOptions();
+            services.AddHttpContextAccessor();
+
+            services.AddAuthentication();
+            services.ConfigureIdentity();
+            services.ConfigureJWT(Configuration);
+            services.AddScoped<IAuthenticationManager, AuthenticationManager>();
+
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, 
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
             ILoggerManager logger)
         {
             if (env.IsDevelopment())
@@ -69,8 +87,14 @@ namespace Api
 
             app.UseForwardedHeaders();
 
+            app.UseResponseCaching();
+            app.UseHttpCacheHeaders();
+
+            app.UseIpRateLimiting();
+
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

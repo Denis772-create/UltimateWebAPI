@@ -22,6 +22,7 @@ namespace Api.Mappings
 
             CreateMap<CompanyForUpdateDto, Company>();
 
+            CreateMap<UserForRegistrationDto, User>();
         }
     }
 }
