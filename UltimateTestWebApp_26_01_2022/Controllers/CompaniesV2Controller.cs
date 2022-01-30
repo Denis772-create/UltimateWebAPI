@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
 {
+    [ApiExplorerSettings(GroupName = "v2")]
     [ApiVersion("2.0")]
     //[Route("api/{v:apiversion}/companies")]
     [Route("api/companies")]

@@ -52,6 +52,7 @@ namespace Api
             services.AddScoped<IDataShaper<EmployeeDto>, DataShaper<EmployeeDto>>();
 
             services.ConfigureVersioning();
+            services.ConfigureSwagger();
 
             services.ConfigureResponseCaching();
             services.ConfigureHttpCacheHeaders();
@@ -64,7 +65,6 @@ namespace Api
             services.ConfigureIdentity();
             services.ConfigureJWT(Configuration);
             services.AddScoped<IAuthenticationManager, AuthenticationManager>();
-
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
@@ -78,6 +78,13 @@ namespace Api
             {
                 app.UseHsts();
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(s =>
+            {
+                s.SwaggerEndpoint("/swagger/v1/swagger.json", "Code Maze API v1");
+                s.SwaggerEndpoint("/swagger/v2/swagger.json", "Code Maze API v2");
+            });
 
             app.ConfigureExceptionHandler(logger);
             app.UseHttpsRedirection();

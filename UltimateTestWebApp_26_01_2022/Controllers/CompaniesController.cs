@@ -14,7 +14,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
 {
-    [ApiVersion("1.0", Deprecated = true)]  
+    [ApiExplorerSettings(GroupName = "v1")]
+    [ApiVersion("1.0", Deprecated = true)]
     //[Route("api/{v:apiversion}/companies")]
     [Route("api/companies")]
     [ApiController]
@@ -33,7 +34,11 @@ namespace Api.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet, Authorize]
+        /// <summary>
+        /// Gets the list of all companies
+        /// </summary>
+        /// <returns>The companies list</returns>
+        [HttpGet, Authorize(Roles = "Manager")]
         [HttpHead]
         [HttpCacheExpiration(CacheLocation = CacheLocation.Public, MaxAge = 60)]
         [HttpCacheValidation(MustRevalidate = false)]
@@ -59,8 +64,18 @@ namespace Api.Controllers
         }
 
 
-
+        /// <summary>
+        /// Creates a newly created company
+        /// </summary>
+        /// <param name="company"></param>
+        /// <returns>A newly created company</returns>
+        /// <response code="201">Returns the newly created item</response>
+        /// <response code="400">If the item is null</response>
+        /// <response code="422">If the model is invalid</response>
         [HttpPost]
+        [ProducesResponseType(201)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(422)]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public async Task<IActionResult> CreateCompany([FromBody] CompanyForCreationDto company)
         {
